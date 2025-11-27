@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env pypy3
 
 import sys
 
@@ -25,7 +25,7 @@ def parse_test(path: str) -> list[tuple]:
 input = lambda: sys.stdin.readline().rstrip()
 
 def main():
-    tests = parse_test('1.in')
+    tests = parse_test('input/2.in')
     t = len(tests)
     pf(t)
     err(f't = {t}')
