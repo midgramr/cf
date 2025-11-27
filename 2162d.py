@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 
 input = lambda: sys.stdin.readline().rstrip()
@@ -41,13 +43,16 @@ def solve():
     l, r = next_l, n
     while l < r:
         m = (l + r) // 2
-        p, a = query(l, m)
-        if p != a:
-            l = m + 1
-        else:
+        p, a = query(m, r)
+        if p == a:
             r = m
+        else:
+            # if p[m, r] != a[m, r], >= 1 elements on the left don't match
+            # thus, we can at least throw out m
+            l = m + 1
+    right_bound = l - 1
 
-    return left_bound, l - 1
+    return left_bound, right_bound
 
 def main():
     T = II()
