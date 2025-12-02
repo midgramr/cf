@@ -84,24 +84,52 @@ def solve():
         x, y = LII()
         points.append((x, y))
 
+    convex_hull: Sequence[Point]
     if len(points) == 1:
         return math.pi * r**2 / 2
     elif len(points) == 2:
-        pass
+        convex_hull = points
+    else:
+        convex_hull = graham_scan(points)
 
-    convex_hull = graham_scan(points)
+    ans = 0
     for i, (p1x, p1y) in enumerate(convex_hull):
         (p2x, p2y) = convex_hull[i - 1 if i > 0 else -1]
 
-        # Compute secant line from p1, p2
-        m = (p2y - p1y) / (p2x - p1x)
-        b = p1y - m * p1x
+        # NOTE: Need to know whether my circular segment
+        # contains all the points
 
-        # Compute chord endpoints
+        l: float
+        if p2x == p1x:
+            # Edge case: vertical line
+            x = p1x
+            ysqrt = math.sqrt(r**2 - x**2)
+            y1, y2 = -ysqrt, ysqrt
+            l = y2 - y1
+
+        else:
+            # Compute secant line from p1, p2
+            m = (p2y - p1y) / (p2x - p1x)
+            b = p1y - m * p1x
+
+            # Compute chord endpoints & length
+            x1, x2 = solve_quad(m**2 + 1, 2 * m * b, b**2 - r**2)
+            y1, y2 = m * x1 + b, m * x2 + b
+            l = norm((x2 - x1, y2 - y1))
+
+        # Solve for theta (circular segment angle)
+        theta = 2 * math.asin(l / (2 * r))
+
+        # Finally, solve for area of circular segment
+        area = r**2 / 2 * (theta - math.sin(theta))
+
+        ans = max(ans, area)
+
+    return ans
 
 def main():
     T = 1
     for _ in range(T):
         ans = solve()
-        print(ans)
+        print(f'{ans:.7f}')
 main()
