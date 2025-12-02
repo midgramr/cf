@@ -23,8 +23,7 @@ int main() {
 
     cin >> n >> m >> l >> x >> y;
 
-    vector<pll> buses(n);
-    vector<pll> people(m);
+    vector<pll> buses(n), people(m);
     for (auto &[s, t] : buses) {
         cin >> s >> t;
     }
