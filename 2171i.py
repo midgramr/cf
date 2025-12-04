@@ -1,77 +1,75 @@
 import sys
 import math
+from math import asin, hypot, sqrt, sin
 from collections.abc import Sequence
+from functools import cmp_to_key
 
-input = lambda: sys.stdin.readline().rstrip()
+input = lambda: sys.stdin.readline().rstrip('\n\r ')
 II = lambda: int(input())
 LII = lambda: list(map(int, input().split()))
 
 Point = tuple[float, float]
 
-def cross(a: Point, b: Point) -> float:
-    (ax, ay), (bx, by) = a, b
-    return ax * by - ay * bx
-
-def dot(a: Point, b: Point) -> float:
-    (ax, ay), (bx, by) = a, b
-    return ax * bx + ay * by
-
-def norm(a: Point) -> float:
-    return math.hypot(*a)
-
 def graham_scan(points: Sequence[Point]) -> Sequence[Point]:
-    # Find p0
+    # Find bottom left point
     p0 = points[0]
     for x, y in points:
         if y < p0[1] or (y == p0[1] and x < p0[0]):
             p0 = (x, y)
 
-    # Sort points by angle w.r.t. p0
-    def key(a: Point):
-        x = (a[0] - p0[0], a[1] - p0[1])
-        unit = (1, 0)
-        dist = norm(x)
-        # Compute -cos(theta) to get monotonically increasing value in [0, pi)
-        angle = -dot(unit, x) / dist if dist > 0 else -1
-        return (angle, dist)
+    def cross(a: Point, b: Point) -> float:
+        (ax, ay), (bx, by) = a, b
+        return ax * by - ay * bx
 
-    candidates = sorted(points, key=key)
+    def cmp_dist(a: Point, b: Point) -> int:
+        dist1, dist2 = hypot(*a), hypot(*b)
+        if dist1 > dist2:
+            return 1
+        elif dist1 < dist2:
+            return -1
+        else:
+            return 0
 
-    # Remove colinear points w.r.t p0
-    points = [candidates[0]]
-    n = len(candidates)
-    for i in range(1, n):
-        a = candidates[i]
-        angle, _ = key(a)
-        if i < n - 1:
-            angle2, _ = key(candidates[i + 1])
-            if angle == angle2:
-                continue
-        points.append(a)
+    # Sort points by polar angle with p0
+    def cmp(a: Point, b: Point) -> int:
+        if a == p0:
+            return -1
+        if b == p0:
+            return 1
+        p1 = (a[0] - p0[0], a[1] - p0[1])
+        p2 = (b[0] - p0[0], b[1] - p0[1])
+        prod = cross(p1, p2)
+        if prod > 0:
+            return -1
+        elif prod < 0:
+            return 1
+        else:
+            return cmp_dist(a, b)
+
+    points = sorted(points, key=cmp_to_key(cmp))
 
     if len(points) < 3:
-        return []
+        return points
 
-    stk = points[:3]
-    for i in range(3, len(points)):
-        p = points[i]
-        while len(stk) > 2:
-            prev1, prev2 = stk[-1], stk[-2]
-            # Check whether (prev2 - prev1) and p - prev1 makes a left turn
-            a = (prev1[0] - prev2[0], prev1[1] - prev2[1])
-            b = (p[0] - prev1[0], p[1] - prev1[1])
+    stk = points[:2]
+    for i in range(2, len(points)):
+        p3 = points[i]
+        while len(stk) > 1:
+            p2, p1 = stk[-1], stk[-2]
+            # Check whether last 3 points make a left turn
+            a = (p2[0] - p1[0], p2[1] - p1[1])
+            b = (p3[0] - p2[0], p3[1] - p2[1])
             if cross(a, b) > 0:
                 break
             stk.pop()
-        stk.append(p)
+        stk.append(p3)
 
     return stk
 
 def solve_quad(a: float, b: float, c: float) -> list[float]:
-    template = '(-b {} math.sqrt(b**2 - 4*a*c)) / (2*a)'
     try:
-        x1 = eval(template.format('+'))
-        x2 = eval(template.format('-'))
+        x1 = (-b - sqrt(b**2 - 4 * a * c)) / (2 * a)
+        x2 = (-b + sqrt(b**2 - 4 * a * c)) / (2 * a)
     except ValueError:
         # If roots are complex, don't return them
         return []
@@ -84,46 +82,52 @@ def solve():
         x, y = LII()
         points.append((x, y))
 
-    convex_hull: Sequence[Point]
-    if len(points) == 1:
-        return math.pi * r**2 / 2
-    elif len(points) == 2:
-        convex_hull = points
-    else:
-        convex_hull = graham_scan(points)
+    circle_area = math.pi * r**2
+    convex_hull = graham_scan(points)
+    m = len(convex_hull)
+
+    if m < 3:
+        return circle_area / 2
 
     ans = 0
-    for i, (p1x, p1y) in enumerate(convex_hull):
-        (p2x, p2y) = convex_hull[i - 1 if i > 0 else -1]
+    for i, (p2x, p2y) in enumerate(convex_hull):
+        p1x, p1y = convex_hull[i - 1 if i > 0 else -1]
+        p3x, p3y = convex_hull[i + 1 if i < m - 1 else 0]
 
-        # NOTE: Need to know whether my circular segment
-        # contains all the points
-
+        # Find length of secant line
         l: float
         if p2x == p1x:
             # Edge case: vertical line
             x = p1x
-            ysqrt = math.sqrt(r**2 - x**2)
+
+            # Check whether secant line divides all points
+            # into the circular segment
+            if (p3x >= x) == (x >= 0):
+                return circle_area / 2
+
+            ysqrt = sqrt(r**2 - x**2)
             y1, y2 = -ysqrt, ysqrt
             l = y2 - y1
-
         else:
             # Compute secant line from p1, p2
             m = (p2y - p1y) / (p2x - p1x)
             b = p1y - m * p1x
 
+            if (p3y >= m * p3x + b) == (b >= 0):
+                return circle_area / 2
+
             # Compute chord endpoints & length
             x1, x2 = solve_quad(m**2 + 1, 2 * m * b, b**2 - r**2)
             y1, y2 = m * x1 + b, m * x2 + b
-            l = norm((x2 - x1, y2 - y1))
+            l = hypot(x2 - x1, y2 - y1)
 
         # Solve for theta (circular segment angle)
-        theta = 2 * math.asin(l / (2 * r))
+        theta = 2 * asin(l / (2 * r))
 
-        # Finally, solve for area of circular segment
-        area = r**2 / 2 * (theta - math.sin(theta))
+        # Solve for area of circular segment
+        segment_area = r**2 / 2 * (theta - sin(theta))
 
-        ans = max(ans, area)
+        ans = max(ans, segment_area)
 
     return ans
 
