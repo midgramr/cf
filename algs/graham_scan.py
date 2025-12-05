@@ -1,6 +1,6 @@
 #!/usr/bin/env pypy3
 
-import math
+from math import hypot
 from collections.abc import Sequence
 from functools import cmp_to_key
 
@@ -18,7 +18,7 @@ def graham_scan(points: Sequence[Point]) -> Sequence[Point]:
         return ax * by - ay * bx
 
     def cmp_dist(a: Point, b: Point) -> int:
-        dist1, dist2 = math.hypot(*a), math.hypot(*b)
+        dist1, dist2 = hypot(*a), hypot(*b)
         if dist1 > dist2:
             return 1
         elif dist1 < dist2:
