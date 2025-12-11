@@ -33,7 +33,7 @@ def factorial(x: int) -> int:
 def prod(nums: Iterable[int]) -> int:
     res = 1
     for num in nums:
-        res = (res * num) % MOD
+        res = res * (num % MOD) % MOD
     return res
 
 def solve():
@@ -46,8 +46,8 @@ def solve():
         next_a = [bi // 2**j for bi in b]
 
         m = sum(aj - ai for aj, ai in zip(next_a, a))
-        prod_mi = prod(factorial(aj - ai) for aj, ai in zip(next_a, a)) % MOD
-        seqs = (seqs * factorial(m) * modular_inverse(prod_mi, MOD)) % MOD
+        prod_mi = prod(factorial(aj - ai) for aj, ai in zip(next_a, a))
+        seqs = seqs * factorial(m) * modular_inverse(prod_mi, MOD) % MOD
 
         x += m
         if j > 0:

@@ -82,12 +82,12 @@ def solve():
         x, y = LII()
         points.append((x, y))
 
-    circle_area = math.pi * r**2
+    semicircle_area = math.pi * r**2 / 2
     convex_hull = graham_scan(points)
     m = len(convex_hull)
 
     if m < 3:
-        return circle_area / 2
+        return semicircle_area
 
     ans = 0
     for i, (p2x, p2y) in enumerate(convex_hull):
@@ -103,7 +103,7 @@ def solve():
             # Check whether secant line divides all points
             # into the circular segment
             if (p3x >= x) == (x >= 0):
-                return circle_area / 2
+                return semicircle_area
 
             ysqrt = sqrt(r**2 - x**2)
             y1, y2 = -ysqrt, ysqrt
@@ -114,7 +114,7 @@ def solve():
             b = p1y - m * p1x
 
             if (p3y >= m * p3x + b) == (b >= 0):
-                return circle_area / 2
+                return semicircle_area
 
             # Compute chord endpoints & length
             x1, x2 = solve_quad(m**2 + 1, 2 * m * b, b**2 - r**2)
