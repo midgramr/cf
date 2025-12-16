@@ -1,20 +1,18 @@
 #!/usr/bin/env pypy3
-from functools import cache
-from math import isqrt
 from sieve import sieve
 
 N = 2 * int(1e5)
 primes = sieve(N)
 
-@cache
-def prime_factorization(n: int) -> set[int]:
+def prime_fact(n: int) -> set[int]:
     if n in primes:
         return {n}
     factors = set()
-    root = isqrt(n)
     m = n
     for prime in primes:
-        if prime > root:
+        # In the worst case when n is semiprime,
+        # this will stop before sqrt(n)
+        if prime > m:
             break
         if m % prime == 0:
             factors.add(prime)
@@ -26,5 +24,5 @@ def prime_factorization(n: int) -> set[int]:
 
 if __name__ == '__main__':
     n = int(input("n = "))
-    factors = prime_factorization(n)
+    factors = prime_fact(n)
     print(factors)
