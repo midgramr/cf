@@ -2,7 +2,7 @@ SHELL = /bin/sh
 .SUFFIXES:
 
 CXX = g++-15
-CXXFLAGS = -std=c++17 -Wall -Wextra
+CXXFLAGS = -std=c++23 -Wall -Wextra -Wno-psabi
 BUILDDIR = build
 
 .PHONY: all makebuild clean
