@@ -1,0 +1,12 @@
+CompileFlags:
+  Add: [-std=c++23, -Wall, -Wextra, -Wshadow]
+  Compiler: /opt/homebrew/bin/g++-15
+  BuiltinHeaders: QueryDriver
+Index:
+  Background: Skip
+Completion:
+  HeaderInsertion: Never
+Diagnostics:
+  Suppress: [type_unsupported, -Wsign-compare]
+Documentation:
+  CommentFormat: Markdown
