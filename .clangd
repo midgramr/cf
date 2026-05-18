@@ -1,5 +1,5 @@
 CompileFlags:
-  Add: [-std=c++23, -Wall, -Wextra, -Wshadow]
+  Add: [-std=c++23, -Wall, -Wextra, -Wshadow, -ferror-limit=0]
   Compiler: /opt/homebrew/bin/g++-15
   BuiltinHeaders: QueryDriver
 Index:
